@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/</item>
+        <item>@font/acme</item>
+        <item>@font/alata</item>
+        <item>@font/allerta</item>
+        <item>@font/amita</item>
+        <item>@font/archivo_black</item>
+        <item>@font/armata</item>
+        <item>@font/autour_one</item>
+        <item>@font/b612</item>
+        <item>@font/b612_italic</item>
+        <item>@font/baloo</item>
+        <item>@font/biryani_extralight</item>
+        <item>@font/biryani_semibold</item>
+        <item>@font/cambay</item>
+        <item>@font/carter_one</item>
+        <item>@font/mina</item>
+        <item>@font/sonsie_one</item>
+    </array>
+</resources>
