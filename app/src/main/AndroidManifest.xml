@@ -8,10 +8,11 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/launcher_icon_test"
+        android:icon="@drawable/logo_1"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/launcher_icon_test"
+        android:roundIcon="@drawable/logo_1"
         android:supportsRtl="true"
+        android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.HearIt">
         <activity
             android:name=".Activities.MainLayout"

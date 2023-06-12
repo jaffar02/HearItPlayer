@@ -60,7 +60,9 @@ public class allSongsRecyclerAdapter extends RecyclerView.Adapter<allSongsRecycl
     @Override
     public void onBindViewHolder(@NonNull mViewHolder holder, int position) {
         int p = position;
-        holder.songName.setText(songList.get(position).getSongName());
+        String songTrimmedName = truncate(songList.get(position).getSongName(), 30);
+        //holder.songName.setText(songList.get(position).getSongName());
+        holder.songName.setText(songTrimmedName);
         songList.get(position).setFavEnabled(false);
 
         holder.songClick.setOnClickListener(new View.OnClickListener() {
@@ -105,7 +107,17 @@ public class allSongsRecyclerAdapter extends RecyclerView.Adapter<allSongsRecycl
                 }).start();
             }
         });
+
+
     }
+
+    public static String truncate(String str, int len){
+        if (str.length() > len) {
+            return str.substring(0, len) + "...";
+        } else {
+            return str;
+        }}
+
 
     @Override
     public int getItemCount() {

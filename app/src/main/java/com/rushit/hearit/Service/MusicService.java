@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class MusicService extends Service {
-    private static final String TAG = "myService";
+    public static final String TAG = "myService";
     ArrayList<Song> songList;
     int currentSong;
     public MediaPlayer mPlayer;
@@ -70,6 +70,7 @@ public class MusicService extends Service {
     public void onCreate() {
         super.onCreate();
         mPlayer = myMediaPlayer.getInstance();
+        Log.d(TAG, "Player initialized");
 
         new Thread(new Runnable() {
             @Override
@@ -110,6 +111,7 @@ public class MusicService extends Service {
     }
 
     @Override
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public int onStartCommand(Intent intent, int flags, int startId) {
         switch (intent.getAction()){
             case playPauseIntentString:
@@ -167,6 +169,7 @@ public class MusicService extends Service {
            try {
                mPlayer.setDataSource(song.getPath());
                mPlayer.prepare();
+               Log.d(TAG, "Player prepared");
                mPlayer.start();
                ShowNotification();
            } catch (IOException e) {
@@ -175,6 +178,7 @@ public class MusicService extends Service {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void playNextSong(){
         if (currentSong>=0 && currentSong<songList.size()-1 && mPlayer!=null){
             currentSong+=1;
@@ -191,7 +195,7 @@ public class MusicService extends Service {
         }
     }
 
-
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void playPreviousSong(){
         if (currentSong>0 && currentSong<songList.size() && mPlayer!=null){
             currentSong-=1;

@@ -102,6 +102,7 @@ public class MainLayout extends AppCompatActivity {
 
         playClickedSong = new BroadcastReceiver() {
             @Override
+            @RequiresApi(api = Build.VERSION_CODES.O)
             public void onReceive(Context context, Intent intent) {
                 if (!intent.getStringExtra("position").isEmpty()){
                     if (Integer.parseInt(intent.getStringExtra("position"))>=0){
@@ -109,6 +110,7 @@ public class MainLayout extends AppCompatActivity {
                         Log.d(TAG, "onReceive: all broadcast called");
                         musicService.playThisSong(position);
                         if (musicService!=null && check) {
+                            Log.d(MusicService.TAG, "Setting Resources");
                             setResources();
                             setSeekBarConfiguration();
                             progress.setProgress(0);
@@ -128,6 +130,7 @@ public class MainLayout extends AppCompatActivity {
 
         favPlayClickedSong = new BroadcastReceiver() {
             @Override
+            @RequiresApi(api = Build.VERSION_CODES.O)
             public void onReceive(Context context, Intent intent) {
                 if (!intent.getStringExtra("positionFav").isEmpty()){
                     if (Integer.parseInt(intent.getStringExtra("positionFav"))>=0){
@@ -177,7 +180,9 @@ public class MainLayout extends AppCompatActivity {
                     if (musicService.isPlaying()) {
                         progress.setProgress(0);
                         progress.setMax(musicService.getMDuration());
-                        musicService.playNextSong();
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            musicService.playNextSong();
+                        }
                         setResources();
                         setSeekBarConfiguration();
                     }
@@ -217,7 +222,9 @@ public class MainLayout extends AppCompatActivity {
                     if (musicService.isPlaying()) {
                         progress.setProgress(0);
                         progress.setMax(musicService.getMDuration());
-                        musicService.playPreviousSong();
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            musicService.playPreviousSong();
+                        }
                         setResources();
                         setSeekBarConfiguration();
                     }

@@ -39,7 +39,6 @@ public class favSongRecyclerAdapter extends RecyclerView.Adapter<favSongRecycler
         bundle.putSerializable("FavSongListBundle", (Serializable) songList);
         forService.putExtra("FavSongList", bundle);
         LocalBroadcastManager.getInstance(context).sendBroadcast(forService);
-
     }
 
     @NonNull
@@ -52,7 +51,8 @@ public class favSongRecyclerAdapter extends RecyclerView.Adapter<favSongRecycler
     @Override
     public void onBindViewHolder(@NonNull fViewHolder holder, @SuppressLint("RecyclerView") int position) {
         int p = position;
-        holder.songName.setText(songList.get(position).getSongName());
+        String songTrimmedName = allSongsRecyclerAdapter.truncate(songList.get(position).getSongName(), 30);
+        holder.songName.setText(songTrimmedName);
         holder.favourite.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.favourite_icon_foreground));
 
         holder.songClick.setOnClickListener(new View.OnClickListener() {
