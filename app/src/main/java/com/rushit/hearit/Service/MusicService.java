@@ -1,5 +1,7 @@
 package com.rushit.hearit.Service;
 
+import static android.app.NotificationManager.IMPORTANCE_HIGH;
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -12,6 +14,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.session.MediaSession;
@@ -30,8 +33,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.media.app.NotificationCompat;
 
 import com.rushit.hearit.Model.Song;
 import com.rushit.hearit.R;
@@ -52,8 +55,9 @@ public class MusicService extends Service {
     public final String playPauseIntentString = "PLAY_MUSIC";
     public final String nextIntentString = "NEXT_MUSIC";
     public final String previousIntentString = "PREVIOUS_MUSIC";
+    public final String closeIntentString = "CLOSE_PLAYER";
     Notification notification;
-
+    public NotificationManager notificationManager;
 
     public MusicService(ArrayList<Song> songList){
         this.songList = songList;
@@ -121,11 +125,13 @@ public class MusicService extends Service {
                         Intent intent1 = new Intent("notiP");
                         intent1.putExtra("pauseIt", "yes");
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent1);
+                        //ShowNotification(getCurPlayStateIcon());
                     }else{
                         playMusic();
                         Intent intent1 = new Intent("notiP");
                         intent1.putExtra("pauseIt", "no");
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent1);
+                        //ShowNotification(getCurPlayStateIcon());
                     }
                 }else {
                     Toast.makeText(getApplicationContext(), "Select a song", Toast.LENGTH_SHORT).show();
@@ -152,10 +158,11 @@ public class MusicService extends Service {
                 }
                 break;
 
-            default:
+            case closeIntentString:
                 stopSelf();
                 stopForeground(true);
                 onDestroy();
+                break;
         }
         return START_NOT_STICKY;
     }
@@ -171,7 +178,8 @@ public class MusicService extends Service {
                mPlayer.prepare();
                Log.d(TAG, "Player prepared");
                mPlayer.start();
-               ShowNotification();
+               ShowNotification(getCurPlayStateIcon());
+               startForeground(1001, notification);
            } catch (IOException e) {
                Log.d(TAG, "playThisSong: " + e.getMessage());
            }
@@ -188,7 +196,8 @@ public class MusicService extends Service {
                 mPlayer.setDataSource(song.getPath());
                 mPlayer.prepare();
                 mPlayer.start();
-                ShowNotification();
+                ShowNotification(getCurPlayStateIcon());
+                startForeground(1001, notification);
             } catch (IOException e) {
                 Log.d(TAG, "playThisSong: "+e.getMessage());
             }
@@ -205,7 +214,8 @@ public class MusicService extends Service {
                 mPlayer.setDataSource(song.getPath());
                 mPlayer.prepare();
                 mPlayer.start();
-                ShowNotification();
+                ShowNotification(getCurPlayStateIcon());
+                startForeground(1001, notification);
             } catch (IOException e) {
                 Log.d(TAG, "playThisSong: "+e.getMessage());
             }
@@ -215,6 +225,10 @@ public class MusicService extends Service {
     public void pauseMusic(){
         if (mPlayer!=null){
             mPlayer.pause();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ShowNotification(getCurPlayStateIcon());
+                startForeground(1001, notification);
+            }
         }
     }
 
@@ -222,6 +236,10 @@ public class MusicService extends Service {
         if (mPlayer!=null){
             if (isSelected) {
                 mPlayer.start();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    ShowNotification(getCurPlayStateIcon());
+                    startForeground(1001, notification);
+                }
             }
         }
     }
@@ -270,7 +288,7 @@ public class MusicService extends Service {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void ShowNotification(){
+    private void ShowNotification(int curPlayState){
         Intent playIntent = new Intent(getApplicationContext(), MusicService.class);
         playIntent.setAction(playPauseIntentString);
         PendingIntent playPendingIntent = PendingIntent.getService(this, 1001, playIntent, PendingIntent.FLAG_MUTABLE);
@@ -283,28 +301,40 @@ public class MusicService extends Service {
         previousIntent.setAction(previousIntentString);
         PendingIntent previousPendingIntent = PendingIntent.getService(this, 1001, previousIntent, PendingIntent.FLAG_MUTABLE);
 
+        Intent closeIntent = new Intent(getApplicationContext(), MusicService.class);
+        previousIntent.setAction(closeIntentString);
+        PendingIntent closePendingIntent = PendingIntent.getService(this, 1001, closeIntent, PendingIntent.FLAG_MUTABLE);
+
+
         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.launcher_icon_test);
 
         MediaSession mediaSession = new MediaSession(getApplicationContext(), "player");
         MediaSession.Token token = mediaSession.getSessionToken();
 
         String CHANNEL_ID = "channelId";
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_LOW);
-        getSystemService(NotificationManager.class).createNotificationChannel(channel);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_DEFAULT);
+        notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
         notification = new Notification.Builder(this, CHANNEL_ID)
                 .setContentText(getCurrentSongName())
-                .setContentTitle(getString(R.string.app_name))
+                .setContentTitle(getCurrentSongName())
                 .setSmallIcon(R.drawable.launcher_icon_test)
                 .setLargeIcon(bm)
                 .addAction(new Notification.Action(R.drawable.previous_icon_foreground, "Previous", previousPendingIntent))
-                .addAction(new Notification.Action(R.drawable.play_icon_foreground, "Play", playPendingIntent))
+                .addAction(new Notification.Action(curPlayState, "Play", playPendingIntent))
                 .addAction(new Notification.Action(R.drawable.next_icon_foreground, "Next", nextPendingIntent))
+                .addAction(new Notification.Action(R.drawable.close_icon_foreground, "Exit", closePendingIntent))
                 .setStyle(new Notification.MediaStyle().setMediaSession(token))
                 .setOnlyAlertOnce(true).build();
+        //notificationManager.notify(0, notification);
+    }
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notification);
-        startForeground(1001, notification);
+    private int getCurPlayStateIcon() {
+        if (isPlaying()){
+            return R.drawable.pause_icon_foreground;
+        }else{
+            return R.drawable.play_icon_foreground;
+        }
     }
 
 }
